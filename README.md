@@ -45,36 +45,9 @@ A Django-based FAQ management system with multi-language support, featuring auto
 
 ## Installation
 
-### Docker Installation
-
-1. Clone the Prashnavali repository:
-```bash
-git clone https://github.com/SakshamTolani/Prashnavali
-cd prashnavali
-```
-
-2. Build and start the containers:
-```bash
-docker-compose up --build
-```
-
-The application will be accessible at `http://localhost:8000`.
-
-To run in detached mode:
-```bash
-docker-compose up -d
-```
-
-To stop the containers:
-```bash
-docker-compose down
-```
-
-### Manual Installation
-
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/SakshamTolani/Prashnavali
 cd prashnavali
 ```
 
