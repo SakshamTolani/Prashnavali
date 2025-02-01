@@ -1,4 +1,3 @@
-# base/models.py
 from django.db import models
 from ckeditor.fields import RichTextField
 from django.core.cache import cache
@@ -7,14 +6,14 @@ from googletrans import Translator
 class FAQ(models.Model):
     question = models.TextField()
     answer = RichTextField()
-    
+
     question_hi = models.TextField(blank=True, null=True)
-    question_bn = models.TextField(blank=True, null=True)
-    question_gu = models.TextField(blank=True, null=True)
-    question_pa = models.TextField(blank=True, null=True)
     answer_hi = RichTextField(blank=True, null=True)
+    question_bn = models.TextField(blank=True, null=True)
     answer_bn = RichTextField(blank=True, null=True)
+    question_gu = models.TextField(blank=True, null=True)
     answer_gu = RichTextField(blank=True, null=True)
+    question_pa = models.TextField(blank=True, null=True)
     answer_pa = RichTextField(blank=True, null=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -27,42 +26,53 @@ class FAQ(models.Model):
         return self.question[:50]
 
     def get_translated_text(self, field, lang):
-        cache_key = f"faq_{self.id}_{field}_{lang}"
-        cached_value = cache.get(cache_key)
-        
-        if cached_value:
-            return cached_value
-
         if lang == 'en':
-            value = getattr(self, field)
-        else:
-            value = getattr(self, f"{field}_{lang}")
+            return getattr(self, field)
             
-            if not value:
+        translated_field = f"{field}_{lang}"
+        translated_value = getattr(self, translated_field)
+        
+        if not translated_value:
+            cache_key = f"faq_{self.id}_{field}_{lang}"
+            cached_value = cache.get(cache_key)
+            
+            if cached_value:
+                return cached_value
+                
+            try:
                 translator = Translator()
                 original_text = getattr(self, field)
                 translation = translator.translate(original_text, dest=lang)
-                value = translation.text
-                setattr(self, f"{field}_{lang}", value)
-                self.save()
-
-        cache.set(cache_key, value, timeout=86400) #24 hours
-        return value
+                translated_value = translation.text
+                setattr(self, translated_field, translated_value)
+                self.save(update_fields=[translated_field])
+                cache.set(cache_key, translated_value, timeout=86400)  # Cache for 24 hours
+            except Exception:
+                return getattr(self, field)  # Fallback to original text
+                
+        return translated_value or getattr(self, field)
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding
-        
-        if is_new:
-            super().save(*args, **kwargs)
-            translator = Translator()
-            
-            for lang in ['hi', 'bn', 'gu', 'pa']:
-                if not getattr(self, f'question_{lang}'):
-                    translation = translator.translate(self.question, dest=lang)
-                    setattr(self, f'question_{lang}', translation.text)
-                
-                if not getattr(self, f'answer_{lang}'):
-                    translation = translator.translate(self.answer, dest=lang)
-                    setattr(self, f'answer_{lang}', translation.text)
-        
         super().save(*args, **kwargs)
+        
+        if is_new and not kwargs.get('update_fields'):
+            self.translate_all_fields()
+
+    def translate_all_fields(self):
+        try:
+            translator = Translator()
+            languages = ['hi', 'bn', 'gu', 'pa']
+            
+            for lang in languages:
+                for field in ['question', 'answer']:
+                    translated_field = f"{field}_{lang}"
+                    if not getattr(self, translated_field):
+                        original_text = getattr(self, field)
+                        translation = translator.translate(original_text, dest=lang)
+                        setattr(self, translated_field, translation.text)
+            
+            self.save(update_fields=[f"{field}_{lang}" for field in ['question', 'answer'] 
+                                   for lang in languages])
+        except Exception:
+            pass 
