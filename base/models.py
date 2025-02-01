@@ -10,8 +10,12 @@ class FAQ(models.Model):
     
     question_hi = models.TextField(blank=True, null=True)
     question_bn = models.TextField(blank=True, null=True)
+    question_gu = models.TextField(blank=True, null=True)
+    question_pa = models.TextField(blank=True, null=True)
     answer_hi = RichTextField(blank=True, null=True)
     answer_bn = RichTextField(blank=True, null=True)
+    answer_gu = RichTextField(blank=True, null=True)
+    answer_pa = RichTextField(blank=True, null=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -52,7 +56,7 @@ class FAQ(models.Model):
             super().save(*args, **kwargs)
             translator = Translator()
             
-            for lang in ['hi', 'bn']:
+            for lang in ['hi', 'bn', 'gu', 'pa']:
                 if not getattr(self, f'question_{lang}'):
                     translation = translator.translate(self.question, dest=lang)
                     setattr(self, f'question_{lang}', translation.text)

@@ -19,6 +19,14 @@ class FAQAdmin(admin.ModelAdmin):
             'fields': ('question_bn', 'answer_bn'),
             'classes': ('collapse',)
         }),
+        ('Gujarati Translation', {
+            'fields': ('question_gu', 'answer_gu'),
+            'classes': ('collapse',)
+        }),
+        ('Punjabi Translation', {
+            'fields': ('question_pa', 'answer_pa'),
+            'classes': ('collapse',)
+        }),
         ('Metadata', {
             'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)

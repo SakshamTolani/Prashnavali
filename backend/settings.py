@@ -155,4 +155,10 @@ LANGUAGES = [
     ('en', 'English'),
     ('hi', 'Hindi'),
     ('bn', 'Bengali'),
+    ('gu', 'Gujarati'),
+    ('pa', 'Punjabi'),
 ]
+
+AVAILABLE_LANGUAGES = ['en', 'hi', 'bn', 'gu', 'pa']
+
+DEFAULT_LANGUAGE = 'en'
